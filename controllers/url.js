@@ -1,26 +1,30 @@
-const shortId = require('shortid');
-const URL = require('../models/url');
+const shortid = require("shortid");
+const URL = require("../models/url");
 
-async function handlerCreateShortUrl(req, res){
-    const shortId = shortId();
-    const body = req.body
-    if(!body.url) return res.status(404).json({ message : "Url is required"})
-    await URL.create({
-        shortId : shortId, redirectUrl: body.url, visiteHistory : []
-    })
-    return res.json({ msg : "success", shortId})
+async function handleGenerateNewShortURL(req, res) {
+  const body = req.body;
+  if (!body.url) return res.status(400).json({ error: "url is required" });
+  const shortID = shortid();
+
+  await URL.create({
+    shortId: shortID,
+    redirectURL: body.url,
+    visitHistory: [],
+  });
+
+  return res.json({ id: shortID });
 }
 
-async function handlerGetAnalytics(req, res) {
-    const url = req.params.shortId;
-    const data = await URL.findOne({url});
-    return res.json({
-        totalClicks : data.visiteHistory.length,
-        analytics : data.visiteHistory
-    })
+async function handleGetAnalytics(req, res) {
+  const shortId = req.params.shortId;
+  const result = await URL.findOne({ shortId });
+  return res.json({
+    totalClicks: result.visitHistory.length,
+    analytics: result.visitHistory,
+  });
 }
 
 module.exports = {
-    handlerCreateShortUrl,
-    handlerGetAnalytics
-}
+  handleGenerateNewShortURL,
+  handleGetAnalytics,
+};
